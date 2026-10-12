@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: lune
+      POSTGRES_PASSWORD: lune_dev
+      POSTGRES_DB: lune
+    ports:
+      - "5432:5432"
+    volumes:
+      - lune-data:/var/lib/postgresql/data
+
+volumes:
+  lune-data:

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Lune.Api/Lune.Api.csproj" />
+  <Project Path="Lune.Tests/Lune.Tests.csproj" />
+</Solution>
