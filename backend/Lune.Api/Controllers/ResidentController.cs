@@ -1,5 +1,6 @@
 using Lune.Api.Data;
 using Lune.Api.Dtos;
+using Lune.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,8 @@ namespace Lune.Api.Controllers;
 [Route("api/residents")]
 public class ResidentsController(AppDbContext db) : ControllerBase
 {
+    private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+
     [HttpGet]
     public async Task<ActionResult<List<ResidentDto>>> GetAll()
     {
@@ -29,5 +32,22 @@ public class ResidentsController(AppDbContext db) : ControllerBase
         if (resident is null) return NotFound();
 
         return ResidentDto.From(resident, DateOnly.FromDateTime(DateTime.Today));
+    }
+
+    [HttpGet("{id:guid}/day")]
+    public async Task<ActionResult<DayViewDto>> GetDay(Guid id, [FromQuery] DateOnly? date)
+    {
+        if (!await db.Residents.AnyAsync(r => r.Id == id)) return NotFound();
+
+        var day = date ?? DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Oslo));
+        var (fromUtc, toUtc) = DayViewBuilder.GetUtcRange(day, Oslo);
+
+        var observations = await db.Observations
+            .Include(o => o.BehaviorType)
+            .Include(o => o.Measure)
+            .Where(o => o.ResidentId == id && o.ObservedAt >= fromUtc && o.ObservedAt < toUtc)
+            .ToListAsync();
+
+        return DayViewBuilder.Build(id, day, observations, Oslo);
     }
 }
