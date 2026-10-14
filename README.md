@@ -16,7 +16,7 @@ Lune er en digital versjon av papirskjemaet som brukes på sykehjem for å regis
 ## Kom i gang
 
 ```bash
-git clone https://github.com/<brukernavn>/lune.git
+git clone https://github.com/naimaanwarr/lune.git
 cd lune
 docker compose up -d
 cd backend
